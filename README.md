@@ -12,4 +12,17 @@ This project features a movie recommender system built with Python. It utilizes 
 
 ## Setup
 1. Install Dependencies:
+   ![Screenshot 2024-08-01 at 9 49 27 PM](https://github.com/user-attachments/assets/2a828947-96ea-44f0-976a-38fead5bea5d)
    
+2. Download Datasets:
+   https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
+
+## Files
+   ### movie_recommender.py: 
+         Contains data processing and recommendation logic.
+   ### app.py: 
+         Streamlit application for user interaction.
+   ### movie_dict.pickle: 
+         Serialized movie data.
+   ### similarity.pickle: 
+         Serialized similarity matrix.
