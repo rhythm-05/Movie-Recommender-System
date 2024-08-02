@@ -1,5 +1,9 @@
 # Movie-Recommender-System
 This project features a movie recommender system built with Python. It utilizes data from TMDb to recommend movies based on user input.
+## How It Looks
+![Screenshot 2024-08-02 at 7 30 29 AM](https://github.com/user-attachments/assets/efe4c538-4825-4fe9-9f49-8a39fe20e231)
+
+![Screenshot 2024-08-02 at 4 07 00 PM](https://github.com/user-attachments/assets/74487565-316e-42b5-a341-59abf2c97f34)
 ## Features
 > ## Data Preprocessing:
       Merges datasets, handles missing values, and processes movie features.
