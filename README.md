@@ -35,5 +35,5 @@ https://github.com/user-attachments/assets/ed5e1536-cffe-4c61-b693-6aeb5bf85f16
 - Lets users create and manage a personal movie watchlist during the session.
 
 ---
-** Datasets:**   
+## Datasets:
 - https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
