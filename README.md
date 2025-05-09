@@ -1,33 +1,39 @@
-# Movie-Recommender-System
-This project features a movie recommender system built with Python. It utilizes data from TMDb to recommend movies based on user input.
-## How It Looks
-![Screenshot 2024-08-02 at 7 30 29 AM](https://github.com/user-attachments/assets/efe4c538-4825-4fe9-9f49-8a39fe20e231)
+# 🎬 CineAI - Movie Recommender System
 
-![Screenshot 2024-08-02 at 4 07 00 PM](https://github.com/user-attachments/assets/74487565-316e-42b5-a341-59abf2c97f34)
-![Screenshot 2024-08-02 at 7 32 50 AM](https://github.com/user-attachments/assets/a39e2e1b-2b7c-47fa-a961-e13910c60ada)
-## Features
-> ## Data Preprocessing:
-      Merges datasets, handles missing values, and processes movie features.
->### Feature Extraction:
-      Converts text data into numerical features using CountVectorizer and applies stemming.
->### Recommendation Engine:
-      Computes movie similarities and provides recommendations based on user input.
->### Web Interface:
-      Built with Streamlit for interactive movie recommendations and poster display.
+**CineAI** is a powerful and interactive movie recommender system built using Python and Streamlit.  
+It leverages TMDb data, machine learning, and natural language processing to provide personalized movie recommendations, sentiment-based review analysis, trailers, and a user watchlist — all in a sleek interface.
 
-## Setup
-1. Install Dependencies:
-   ![Screenshot 2024-08-01 at 9 49 27 PM](https://github.com/user-attachments/assets/2a828947-96ea-44f0-976a-38fead5bea5d)
-   
-2. Download Datasets:
-   https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
+---
+## 🖼️ How It Looks
+https://github.com/user-attachments/assets/ed5e1536-cffe-4c61-b693-6aeb5bf85f16
 
-## Files
-   ### movie_recommender.py: 
-         Contains data processing and recommendation logic.
-   ### app.py: 
-         Streamlit application for user interaction.
-   ### movie_dict.pickle: 
-         Serialized movie data.
-   ### similarity.pickle: 
-         Serialized similarity matrix.
+## ✅ Features
+
+> ### 🔍 Data Preprocessing:
+- Merges datasets, handles missing values, and processes movie metadata for modeling.
+
+> ### 🧠 Feature Extraction:
+- Converts textual information into numerical vectors using `CountVectorizer`.
+- Applies stemming and removes stopwords for clean feature creation.
+
+> ### 🎯 Recommendation Engine:
+- Computes cosine similarity between movie vectors.
+- Returns top recommended movies based on user selection.
+
+> ### 🌐 Web Interface:
+- Built with **Streamlit** for a responsive and interactive UI.
+- Displays movie posters using TMDb API.
+
+> ### 🎬 Trailer Fetcher:
+- Uses YouTube API integration to fetch and display trailers for each movie.
+
+> ### 💬 Sentiment Analysis:
+- Analyzes reviews using **VADER** sentiment analyzer.
+- Displays percentage of positive/negative reviews.
+
+> ### ⭐ Watchlist Manager:
+- Lets users create and manage a personal movie watchlist during the session.
+
+---
+** Datasets:**   
+- https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
