@@ -1,12 +1,11 @@
 # 🎬 CineAI - Movie Recommender System
 
 **CineAI** is a powerful and interactive movie recommender system built using Python and Streamlit.  
-It leverages TMDb data, machine learning, and natural language processing to provide personalized movie recommendations, sentiment-based review analysis, trailers, and a user watchlist — all in a sleek interface.
+It leverages TMDb data, machine learning, and natural language processing to provide personalized movie recommendations, sentiment-based review analysis, trailers, and a user watchlist all in a sleek interface.
 
 ---
 ## 🖼️ How It Looks
-https://github.com/user-attachments/assets/ed5e1536-cffe-4c61-b693-6aeb5bf85f16
-
+https://github.com/user-attachments/assets/23c2d959-33ec-4c5a-bef5-2d93dac13880 
 ## ✅ Features
 
 > ### 🔍 Data Preprocessing:
@@ -23,7 +22,10 @@ https://github.com/user-attachments/assets/ed5e1536-cffe-4c61-b693-6aeb5bf85f16
 > ### 🌐 Web Interface:
 - Built with **Streamlit** for a responsive and interactive UI.
 - Displays movie posters using TMDb API.
-
+> ### 🔐 User Authentication
+-Login or browse as a guest
+> ### 🍿 Trending Movies
+-Real-time trending data via TMDB API
 > ### 🎬 Trailer Fetcher:
 - Uses YouTube API integration to fetch and display trailers for each movie.
 
