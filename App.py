@@ -13,34 +13,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom CSS for better UI
-st.markdown("""
-<style>
-    /* Smooth tab transitions */
-    .stTabs [role="tabpanel"] {
-        transition: all 0.3s ease;
-    }
-
-    /* Highlight active tab */
-    [aria-selected="true"] {
-        background-color: #0d6efd !important;
-        color: white !important;
-    }
-
-    /* Better trailer container */
-    .trailer-container iframe {
-        min-height: 500px;
-        border-radius: 10px;
-        margin: 1rem 0;
-    }
-
-    /* Button animations */
-    button:active {
-        transform: scale(0.98);
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # TMDB API Configuration
 TMDB_API_KEY = "68fa86877a10fe6349fff68a23f62007"
 
@@ -61,6 +33,20 @@ analyzer = SentimentIntensityAnalyzer()
 
 @st.cache_data
 def load_data():
+    # File IDs and their destinations
+    files = {
+        "movie_list.pkl": "1Uhr1m4oEK7X2MpUngWNgTLqyucLJjKzV",
+        "similarity.pkl": "1It16hDih8qEXKrCL43a6s8hsxtPpYvIC"
+    }
+
+    # Download missing files
+    for filename, file_id in files.items():
+        if not os.path.exists(filename):
+            url = f"https://drive.google.com/uc?id={file_id}"
+            gdown.download(url, filename, quiet=False)
+            print(f"Downloaded {filename}")
+
+    # Load files
     movies = pickle.load(open('movie_list.pkl', 'rb'))
     similarity = pickle.load(open('similarity.pkl', 'rb'))
     return movies, similarity
