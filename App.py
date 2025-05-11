@@ -1,5 +1,3 @@
-import json
-from pathlib import Path
 import pickle
 import streamlit as st
 import requests
@@ -7,13 +5,18 @@ import time
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import json
+from pathlib import Path
+import hashlib
+import uuid
+from datetime import datetime
 st.set_page_config(
     page_title="CineAI - Movie Recommender",
     page_icon="🎬",
     layout="centered"
 )
+st.title("🎬CineAI - Movie Recommender")
 
-# Custom CSS for better UI
 st.markdown("""
 <style>
     /* Smooth tab transitions */
@@ -43,7 +46,30 @@ st.markdown("""
 
 # TMDB API Configuration
 TMDB_API_KEY = "68fa86877a10fe6349fff68a23f62007"
+# ===== USER DATABASE =====
+USER_DB_FILE = "user_data.json"
 
+# Load existing users or create new file
+if Path(USER_DB_FILE).exists():
+    with open(USER_DB_FILE) as f:
+        USER_DB = json.load(f)
+else:
+    USER_DB = {
+        "Rhythm": {
+            "name": "Rhythm Gaba",
+            "password": hashlib.sha256("password123".encode()).hexdigest(),
+            "watchlist": [],
+            "joined": "2025-10-05"
+        },
+        "Jake": {
+            "name": "Jake Paralta",
+            "password": hashlib.sha256("password123".encode()).hexdigest(),
+            "watchlist": [],
+            "joined": "2024-12-04"
+        }
+    }
+    with open(USER_DB_FILE, 'w') as f:
+        json.dump(USER_DB, f)
 # Configure session with retry strategy
 session = requests.Session()
 retry = Retry(
@@ -68,16 +94,17 @@ def load_data():
 
 # Watchlist functions
 def load_watchlist():
-    if Path("watchlist.json").exists():
-        with open("watchlist.json", "r") as f:
-            return json.load(f)
-    return []
-
+    if st.session_state.auth['user'] == "guest":
+        return st.session_state.get('guest_watchlist', [])
+    return USER_DB[st.session_state.auth['user']].get('watchlist', [])
 
 def save_watchlist(watchlist):
-    with open("watchlist.json", "w") as f:
-        json.dump(watchlist, f)
-
+    if st.session_state.auth['user'] == "guest":
+        st.session_state.guest_watchlist = watchlist
+    else:
+        USER_DB[st.session_state.auth['user']]['watchlist'] = watchlist
+        with open(USER_DB_FILE, 'w') as f:  # Save to file
+            json.dump(USER_DB, f)
 
 def fetch_poster(movie_id):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=en-US"
@@ -166,6 +193,15 @@ def analyze_sentiment(reviews):
         'overall_verdict': overall_verdict
     }
 
+def get_trending_movies(time_window='day'):
+    url = f"https://api.themoviedb.org/3/trending/movie/{time_window}?api_key={TMDB_API_KEY}"
+    try:
+        response = session.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json().get('results', [])[:5]  # Top 5 trending
+    except Exception as e:
+        st.error(f"Error fetching trending movies: {e}")
+        return []
 
 def recommend(movie, movies, similarity):
     index = movies[movies['title'] == movie].index[0]
@@ -181,10 +217,52 @@ def recommend(movie, movies, similarity):
         recommended_movie_posters.append(poster)
 
     return recommended_movie_names, recommended_movie_posters
-# ... (keep all your imports and setup code the same until the main() function)
 
+# ===== SESSION MANAGEMENT =====
+def init_session():
+    if 'auth' not in st.session_state:
+        st.session_state.auth = {
+            'authenticated': False,
+            'user': None,
+            'token': None,
+            'last_active': None
+        }
+
+def login(username, password):
+    hashed_pw = hashlib.sha256(password.encode()).hexdigest()
+    if username in USER_DB and USER_DB[username]['password'] == hashed_pw:
+        st.session_state.auth = {
+            'authenticated': True,
+            'user': username,
+            'token': str(uuid.uuid4()),
+            'last_active': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        return True
+    return False
+
+def logout():
+    st.session_state.auth = {
+        'authenticated': False,
+        'user': None,
+        'token': None,
+        'last_active': None
+    }
 def main():
     movies, similarity = load_data()
+    if 'auth' not in st.session_state:
+        st.session_state.auth = {
+            'authenticated': False,
+            'user': None,
+            'token': None,
+            'last_active': None
+        }
+    # Simple logout button (top-right corner)
+    if st.session_state.auth['authenticated']:
+        cols = st.columns([4, 1])
+        with cols[1]:
+            if st.button("🚪 Logout"):
+                st.session_state.auth['authenticated'] = False
+                st.rerun()
 
     # Initialize session state variables
     if 'trailer_to_show' not in st.session_state:
@@ -197,9 +275,48 @@ def main():
         st.session_state.selected_movie = movies['title'].values[0]
     if 'recommendations' not in st.session_state:  # Initialize recommendations
         st.session_state.recommendations = None
+    init_session()
 
+
+    if not st.session_state.auth['authenticated']:
+
+        col1, col2, col3 = st.columns([1, 3, 1])
+        with col2:
+
+            with st.container(border=True):
+                st.markdown("## 🎬 Welcome to CineAI")
+
+
+                tab1, tab2 = st.tabs(["Login", "Guest"])
+
+                with tab1:  # Login Tab
+                    with st.form("auth_form"):
+                        username = st.text_input("Username")
+                        password = st.text_input("Password", type="password")
+
+                        if st.form_submit_button("Login", use_container_width=True):
+                            if login(username, password):
+                                st.rerun()
+                            else:
+                                st.error("Invalid credentials")
+
+                with tab2:  # Guest Tab
+                    if st.button("Explore as Guest", use_container_width=True):
+                        st.session_state.auth = {
+                            'authenticated': True,
+                            'user': "guest",
+                            'token': str(uuid.uuid4()),
+                            'last_active': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                        if 'guest_watchlist' not in st.session_state:
+                            st.session_state.guest_watchlist = []
+                        st.rerun()
+
+        return
     # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
+    # Update your tabs definition (add "🔥 Trending" as the first tab)
+    tab0, tab1, tab2, tab3, tab4 = st.tabs([
+        "🔥 Trending",
         "🎬 Movie Recommender",
         "📊 Sentiment Analysis",
         "💾 My Watchlist",
@@ -210,6 +327,38 @@ def main():
     if st.session_state.current_tab != st.session_state.active_tab:
         st.session_state.active_tab = st.session_state.current_tab
         st.rerun()
+
+    with tab0:
+        st.header("🔥 Trending This Week")
+
+        time_window = st.radio("Time Window", ["Today", "This Week"],
+                               horizontal=True, index=0)
+
+        trending_movies = get_trending_movies('day' if time_window == "Today" else 'week')
+
+        if trending_movies:
+            cols = st.columns(5)
+            for i, movie in enumerate(trending_movies):
+                with cols[i]:
+                    # Movie poster
+                    poster_url = f"https://image.tmdb.org/t/p/w500{movie['poster_path']}" if movie[
+                        'poster_path'] else None
+                    st.image(poster_url, use_container_width=True)
+
+                    # Movie title as clickable link
+                    tmdb_url = f"https://www.themoviedb.org/movie/{movie['id']}"
+                    st.markdown(f"[**{movie['title']}**]({tmdb_url})", unsafe_allow_html=True)
+
+                    # Rating and other info
+                    st.caption(f"⭐ {movie.get('vote_average', 'N/A')}/10")
+
+                    # "More Info" button that links to TMDB
+                    st.markdown(
+                        f'<a href="{tmdb_url}" target="_blank" style="display: inline-block; padding: 0.25rem 0.75rem; background-color: #0d6efd; color: white; border-radius: 0.25rem; text-decoration: none;">More Info</a>',
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.warning("Couldn't load trending movies. Try again later.")
 
     with tab1:
         st.header("🍿 Movie Recommender")
@@ -282,21 +431,18 @@ def main():
                         st.session_state.current_tab = "🍿 Trailer Wall"
                         st.rerun()
 
-                    if st.button(f"➕ Add to Watchlist",
-                                 key=f"add_{name}",
-                                 use_container_width=True):
-                        if 'watchlist' not in st.session_state:
-                            st.session_state.watchlist = []
+                    if st.button(f"➕ Add to Watchlist", key=f"add_{name}", use_container_width=True):
+                        watchlist = load_watchlist()  # Always use the function
 
-                        if name not in [m['name'] for m in st.session_state.watchlist]:
-                            st.session_state.watchlist.append({
+                        if not any(movie['name'] == name for movie in watchlist):
+                            watchlist.append({
                                 'name': name,
                                 'poster': poster,
-                                'added_date': time.strftime("%Y-%m-%d"),
+                                'added_date': datetime.now().strftime("%Y-%m-%d"),
                                 'watched': False,
                                 'trailer_url': get_movie_trailer(name)
                             })
-                            save_watchlist(st.session_state.watchlist)
+                            save_watchlist(watchlist)  # Save using the function
                             st.success(f"Added {name} to watchlist!")
                             st.rerun()
                         else:
